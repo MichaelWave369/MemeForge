@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="MemeForge turns cultural signals and topics into original meme concepts you can edit and export in the browser." />
+  <meta name="theme-color" content="#101116" />
+  <title>MemeForge — Trend to Meme Engine</title>
+  <link rel="stylesheet" href="./src/styles.css" />
+</head>
+<body>
+  <div class="noise" aria-hidden="true"></div>
+
+  <header class="site-header shell">
+    <a class="brand" href="#top" aria-label="MemeForge home">
+      <span class="brand-mark">MF</span>
+      <span>
+        <strong>MemeForge</strong>
+        <small>cultural signal → shareable joke</small>
+      </span>
+    </a>
+    <nav class="header-actions" aria-label="Primary navigation">
+      <a href="#forge">Forge</a>
+      <a href="#studio">Studio</a>
+      <a href="./docs/ARCHITECTURE.md">Architecture</a>
+      <a class="github-link" href="https://github.com/MichaelWave369/MemeForge" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </nav>
+  </header>
+
+  <main id="top">
+    <section class="hero shell">
+      <div class="hero-copy">
+        <p class="eyebrow">MEME INTELLIGENCE // LOCAL-FIRST MVP</p>
+        <h1>Forge memes from whatever the internet is talking about.</h1>
+        <p class="lede">Pick a topic, choose a humor profile, dial the weirdness, and MemeForge generates distinct concepts you can remix, edit, and export as PNG — with no API key required.</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#forge">Start forging</a>
+          <button class="button ghost" id="surpriseMe" type="button">Surprise me</button>
+        </div>
+      </div>
+
+      <aside class="signal-card" aria-label="MemeForge status">
+        <div class="signal-topline"><span class="status-dot"></span> ENGINE ONLINE</div>
+        <dl>
+          <div><dt>Generator</dt><dd>Local</dd></div>
+          <div><dt>API keys</dt><dd>None</dd></div>
+          <div><dt>Export</dt><dd>PNG</dd></div>
+          <div><dt>Trend feed</dt><dd>Demo / V1 hook ready</dd></div>
+        </dl>
+      </aside>
+    </section>
+
+    <section class="shell section" id="forge">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">01 // SIGNAL INPUT</p>
+          <h2>What are we memeing?</h2>
+        </div>
+        <p class="section-note">Trend cards are intentionally demo prompts in V0. Live trend adapters come in V1.</p>
+      </div>
+
+      <div class="trend-strip" id="trendStrip" aria-label="Demo topic prompts"></div>
+
+      <div class="forge-panel panel">
+        <label class="field topic-field">
+          <span>Topic or cultural signal</span>
+          <input id="topicInput" type="text" maxlength="140" placeholder="e.g. AI agents becoming coworkers" autocomplete="off" />
+        </label>
+
+        <fieldset class="field styles-field">
+          <legend>Humor profiles</legend>
+          <div class="style-grid" id="styleGrid"></div>
+        </fieldset>
+
+        <label class="field range-field" for="weirdness">
+          <span>Weirdness <output id="weirdnessValue">7</output>/10</span>
+          <input id="weirdness" type="range" min="1" max="10" value="7" />
+          <span class="range-labels"><small>recognizable</small><small>internet poisoning</small></span>
+        </label>
+
+        <div class="forge-action-row">
+          <button class="button primary big" id="generateButton" type="button">Generate 12 concepts</button>
+          <div class="score-box" id="scoreBox" aria-live="polite">
+            <span>Meme potential</span>
+            <strong>—</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="shell section" id="conceptsSection" hidden>
+      <div class="section-heading compact">
+        <div>
+          <p class="eyebrow">02 // ANGLE ENGINE</p>
+          <h2>Concept tournament</h2>
+        </div>
+        <button class="button ghost small" id="regenerateButton" type="button">Regenerate</button>
+      </div>
+      <div class="concept-grid" id="conceptGrid"></div>
+    </section>
+
+    <section class="shell section studio-section" id="studio">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">03 // MEME STUDIO</p>
+          <h2>Edit the survivor.</h2>
+        </div>
+        <p class="section-note">The canvas uses original generated visual treatments rather than copyrighted template art.</p>
+      </div>
+
+      <div class="studio-grid">
+        <div class="canvas-wrap panel">
+          <canvas id="memeCanvas" width="1080" height="1080" aria-label="Meme preview canvas"></canvas>
+        </div>
+
+        <div class="editor panel">
+          <label class="field">
+            <span>Top text</span>
+            <textarea id="topText" rows="3" maxlength="180">WHEN THE INTERNET INVENTS A NEW PROBLEM</textarea>
+          </label>
+          <label class="field">
+            <span>Bottom text</span>
+            <textarea id="bottomText" rows="3" maxlength="180">AND SOMEHOW IT BECOMES YOUR MEETING</textarea>
+          </label>
+          <label class="field">
+            <span>Visual treatment</span>
+            <select id="visualTheme">
+              <option value="signal">Signal Grid</option>
+              <option value="void">Void Poster</option>
+              <option value="paper">Office Memo</option>
+              <option value="warning">Warning Label</option>
+              <option value="terminal">Terminal Brain</option>
+            </select>
+          </label>
+          <label class="check-field">
+            <input id="watermark" type="checkbox" checked />
+            <span>Add small MemeForge mark</span>
+          </label>
+          <div class="editor-actions">
+            <button class="button primary" id="downloadButton" type="button">Download PNG</button>
+            <button class="button ghost" id="copyButton" type="button">Copy caption</button>
+            <button class="button ghost" id="shuffleTheme" type="button">Shuffle look</button>
+          </div>
+          <p class="caption-preview" id="captionPreview">WHEN THE INTERNET INVENTS A NEW PROBLEM — AND SOMEHOW IT BECOMES YOUR MEETING</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <p>MemeForge V0.1 · Local-first meme prototyping lab.</p>
+    <p>Built to turn signals into jokes, not pretend demo data is live data.</p>
+  </footer>
+
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>
