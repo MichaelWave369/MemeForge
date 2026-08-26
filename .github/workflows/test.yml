@@ -28,6 +28,9 @@ jobs:
           node --check src/data/templates.js
           node --check src/engines/storage-engine.js
           node --check src/engines/template-engine.js
+          node --check react-app/src/canvas.js
+          node --check react-app/src/remix-history.js
+          node --check react-app/src/useStudioHistory.js
 
       - name: Run engine and wiring tests
         run: npm test
