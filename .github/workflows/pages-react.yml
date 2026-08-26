@@ -30,12 +30,10 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 22
-          cache: npm
-          cache-dependency-path: react-app/package-lock.json
 
       - name: Install React dependencies
         working-directory: react-app
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Build React site
         working-directory: react-app
