@@ -24,7 +24,10 @@ jobs:
       - name: Syntax check browser source
         run: |
           node --check src/app.js
+          node --check src/template-ui.js
+          node --check src/data/templates.js
           node --check src/engines/storage-engine.js
+          node --check src/engines/template-engine.js
 
       - name: Run engine and wiring tests
         run: npm test
