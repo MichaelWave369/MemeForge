@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
 
 import { buildConcepts } from '../src/engines/meme-engine.js';
 import { scoreMemePotential } from '../src/engines/score-engine.js';
@@ -99,4 +100,18 @@ test('storage helper reports quota-like write failures instead of throwing', () 
   const saved = saveProject(storage, { topic: 'too large' });
   assert.equal(saved.ok, false);
   assert.match(saved.error, /quota/i);
+});
+
+test('browser entrypoint selectors are backed by HTML ids', async () => {
+  const [app, html] = await Promise.all([
+    readFile(new URL('../src/app.js', import.meta.url), 'utf8'),
+    readFile(new URL('../index.html', import.meta.url), 'utf8')
+  ]);
+
+  const ids = [...app.matchAll(/\$\('#([^']+)'\)/g)].map(match => match[1]);
+  assert.ok(ids.length > 20, 'expected the smoke test to discover the studio selector set');
+
+  for (const id of new Set(ids)) {
+    assert.match(html, new RegExp(`id=["']${id}["']`), `missing #${id} in index.html`);
+  }
 });
