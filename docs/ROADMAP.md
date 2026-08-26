@@ -12,7 +12,7 @@ signal → angle → selection → render → share
 
 ## V0.1 — Local Forge
 
-Status: **implemented foundation**
+Status: **implemented**
 
 - Manual topic input
 - Demo signal prompts
@@ -26,17 +26,37 @@ Status: **implemented foundation**
 - PNG export
 - Responsive layout
 
-## V0.2 — Better Studio
+## V0.2 — Meme Studio
 
-- Local image upload
-- Image crop / position / zoom
-- Text size controls
-- Text placement controls
-- More visual treatments
-- Sticker / shape layer
-- Undo / redo
-- Project state saved in `localStorage`
-- Export aspect ratios: square, portrait, landscape
+Status: **implemented core**
+
+- [x] Local image upload
+- [x] Browser-side image resizing before persistence
+- [x] Image cover / contain
+- [x] Image position X/Y
+- [x] Image zoom
+- [x] Draggable top and bottom text layers
+- [x] Text size controls
+- [x] Font-family controls
+- [x] Text color controls
+- [x] Text alignment controls
+- [x] Outline / shadow controls
+- [x] Fine-grained text X/Y placement controls
+- [x] Versioned project state saved in `localStorage`
+- [x] Explicit save / load
+- [x] Debounced autosave
+- [x] PNG export without editor-selection chrome
+- [ ] Sticker / shape layer
+- [ ] Undo / redo
+- [ ] Export aspect ratios: square, portrait, landscape
+
+### V0.2 hardening targets
+
+- Storage-size meter for image-heavy projects
+- Optional lower-quality image persistence mode
+- Keyboard nudging for selected text layers
+- Better mobile drag affordances
+- Project import/export as JSON
 
 ## V0.3 — Template system
 
@@ -176,4 +196,4 @@ MemeForge should not become:
 
 ## North star
 
-MemeForge succeeds when a user can discover a topic, understand why it may be interesting, create several genuinely different jokes about it, and leave with a polished artifact in a few minutes.
+MemeForge succeeds when a user can discover a topic, understand why it may be interesting, create several genuinely different jokes about it, turn the chosen joke into a polished image without leaving the browser, and leave with a shareable artifact in a few minutes.
