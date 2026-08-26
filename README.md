@@ -2,11 +2,11 @@
 
 **Cultural signal → shareable joke.**
 
-MemeForge is a local-first browser app for turning a topic into multiple distinct meme concepts, selecting the best angle, editing it on a canvas, and exporting the finished meme as a PNG.
+MemeForge is a local-first browser app for turning a topic into multiple distinct meme concepts, selecting the best angle, editing it in a real browser-native meme studio, saving the project locally, and exporting the finished meme as a PNG.
 
 V0 deliberately works **without an AI API, backend, account, or API key**. It is designed as a clean foundation for future live-trend and AI adapters without making demo data look live.
 
-## What works now
+## What works now — V0.2
 
 - Manual topic entry
 - Clearly labeled demo signal prompts
@@ -15,13 +15,21 @@ V0 deliberately works **without an AI API, backend, account, or API key**. It is
 - Transparent `Meme Potential` creative heuristic
 - 12-concept angle tournament
 - Original-browser Canvas meme renderer
-- Editable top and bottom text
+- User-supplied image backgrounds
+- Browser-side image resizing before persistence
+- Image cover / contain, zoom, and X/Y pan controls
+- Draggable top and bottom text layers
+- Per-layer font family, size, color, alignment, outline, shadow, and X/Y controls
 - Multiple original visual treatments
 - Optional MemeForge watermark
+- Local project save / load with versioned storage format
+- Autosave after edits
 - Caption copy
-- PNG export
+- PNG export without editor selection outlines
 - Responsive UI
 - Zero runtime dependencies
+
+Uploaded images are processed locally in the browser. MemeForge V0.2 does not upload them to a server.
 
 ## Run locally
 
@@ -37,9 +45,17 @@ Then open `http://localhost:8080`.
 
 Any simple static server works.
 
+## Tests
+
+```bash
+npm test
+```
+
+The test suite covers concept generation, creative scoring, deterministic behavior, project serialization, schema-version rejection, local storage round-tripping, and graceful storage-write failures.
+
 ## Static hosting
 
-MemeForge V0 is intentionally static-host friendly. It can be served from:
+MemeForge remains intentionally static-host friendly. It can be served from:
 
 - GitHub Pages
 - Netlify
@@ -71,8 +87,11 @@ Selected concept
      ▼
 Canvas Meme Studio
      │
-     ├── edit copy
-     ├── visual treatment
+     ├── uploaded/local background
+     ├── crop / zoom / pan
+     ├── draggable text layers
+     ├── typography controls
+     ├── local project storage
      ├── copy caption
      └── export PNG
 ```
@@ -95,7 +114,7 @@ When live trend adapters arrive, external signal measurements should be displaye
 
 ## Roadmap
 
-### V0.x — Forge locally
+### V0.1 — Local Forge
 
 - [x] Browser UI
 - [x] Local angle engine
@@ -103,9 +122,27 @@ When live trend adapters arrive, external signal measurements should be displaye
 - [x] Concept tournament
 - [x] Canvas editor
 - [x] PNG export
-- [ ] User-supplied image backgrounds
-- [ ] Local template library
-- [ ] Save recent projects in local storage
+
+### V0.2 — Meme Studio
+
+- [x] User-supplied image backgrounds
+- [x] Browser-side image resizing
+- [x] Image fit / position / zoom
+- [x] Draggable text placement
+- [x] Font / size / color / alignment controls
+- [x] Outline and shadow controls
+- [x] Save and load projects in local storage
+- [x] Autosave
+- [ ] Undo / redo
+- [ ] Sticker / shape layers
+- [ ] Multiple export aspect ratios
+
+### V0.3 — Template system
+
+- [ ] Original built-in template library
+- [ ] User-created reusable templates
+- [ ] Template search / filters
+- [ ] Template import / export
 
 ### V1 — Trend Radar
 
@@ -145,9 +182,10 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md).
 1. **Do not fake live data.** Demo data says demo.
 2. **Diversity beats repetition.** Concepts should be meaningfully different.
 3. **Local-first before cloud-first.** The core tool should remain useful offline/static.
-4. **Separate evidence from inference.** Trend strength, creative scoring, and predicted engagement are different things.
-5. **Original by default.** V0 uses generated graphic treatments instead of shipping copyrighted meme-template art.
-6. **Provider adapters stay replaceable.** No single AI or trend source should own the architecture.
+4. **Local images stay local.** User uploads are processed in-browser unless a future feature explicitly says otherwise.
+5. **Separate evidence from inference.** Trend strength, creative scoring, and predicted engagement are different things.
+6. **Original by default.** Built-in treatments avoid shipping copyrighted meme-template art.
+7. **Provider adapters stay replaceable.** No single AI or trend source should own the architecture.
 
 ## Repository layout
 
@@ -161,10 +199,14 @@ MemeForge/
 │   │   └── trends.js
 │   └── engines/
 │       ├── meme-engine.js
-│       └── score-engine.js
+│       ├── score-engine.js
+│       └── storage-engine.js
+├── tests/
+│   └── engine.test.mjs
 ├── docs/
 │   ├── ARCHITECTURE.md
 │   └── ROADMAP.md
+├── package.json
 ├── LICENSE
 └── README.md
 ```
@@ -175,4 +217,4 @@ MIT. See [`LICENSE`](LICENSE).
 
 ---
 
-**MemeForge V0.1** — build the joke engine first; plug in the firehose second.
+**MemeForge V0.2** — forge it, drag it, save it, export it.
