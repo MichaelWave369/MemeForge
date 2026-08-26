@@ -2,11 +2,20 @@
 
 **Cultural signal → shareable joke.**
 
-MemeForge is a local-first browser app for turning a topic into multiple distinct meme concepts, selecting the best angle, applying a reusable visual template, editing it in a browser-native meme studio, saving the project locally, and exporting the finished meme as a PNG.
+MemeForge is a local-first meme workshop for turning a topic into multiple distinct joke angles, selecting the strongest one, applying a reusable look, editing it on Canvas, and exporting a finished image quickly.
 
-V0 deliberately works **without an AI API, backend, account, or API key**. It is designed as a clean foundation for future live-trend and AI adapters without making demo data look live.
+The repository now contains two frontends:
 
-## What works now — V0.3
+- the original dependency-free browser app in the repository root;
+- the public React/Vite app in `react-app/`, automatically deployed to GitHub Pages.
+
+Public React app: `https://michaelwave369.github.io/MemeForge/`
+
+MemeForge deliberately works without an AI API, backend, account, or API key. Demo trend prompts remain labeled demo until V1 Trend Radar introduces evidence-backed live signal adapters.
+
+## Current milestone — React V0.4 Remix Tools
+
+The V0.4 goal is speed: make the one-minute meme workflow faster without turning MemeForge into a heavyweight image editor.
 
 ### Forge
 
@@ -20,257 +29,258 @@ V0 deliberately works **without an AI API, backend, account, or API key**. It is
 ### Template Library
 
 - 8 original built-in reusable layouts
-- Template search across names, descriptions, and tags
-- All / Favorites / Built-in / My Templates filters
-- Favorite templates stored locally
-- Save the current studio look as a reusable user template
+- Search and source/favorite filters
+- Local favorites
+- Save the current look as a reusable user template
 - Delete user templates
-- Versioned JSON template-pack export/import
-- Imported templates normalized and bounded before use
-- User-template files deliberately exclude meme captions and uploaded-image bytes
-- Applying a template preserves the current caption and uploaded image
+- Versioned JSON template-pack import/export
+- Import normalization and malformed-value hardening
+- Templates exclude captions, uploaded-image bytes, and uploaded-image filenames
+- Applying a template preserves the current caption and image
 
 ### Meme Studio
 
 - Browser Canvas renderer
-- User-supplied image backgrounds
-- Browser-side image resizing before persistence
-- Image cover / contain, zoom, and X/Y pan controls
+- Local image upload and browser-side resizing
+- Cover / contain, zoom, and X/Y pan
 - Draggable top and bottom text layers
-- Per-layer font family, size, color, alignment, outline, shadow, and X/Y controls
-- Multiple original visual treatments
-- Optional MemeForge watermark
-- Local project save / load with versioned storage format
-- Autosave after edits
-- Caption copy
-- PNG export without editor selection outlines
-- Responsive UI
-- Zero runtime dependencies
+- Per-layer font, size, color, alignment, outline, shadow, and position controls
+- Local project save/load and autosave
+- PNG export
 
-Uploaded images are processed locally in the browser. MemeForge V0.3 does not upload them to a server.
+### V0.4 Remix Tools
 
-## Run locally
+- **One-click Remix** — choose another concept and built-in look while preserving the current uploaded image
+- **Undo / redo** — grouped editing history plus Ctrl/Cmd+Z, Shift+Ctrl/Cmd+Z, and Ctrl/Cmd+Y
+- **Four export formats** — Square 1:1, Portrait 4:5, Story 9:16, Landscape 16:9
+- **Sticker / shape layers** — draggable emoji/symbol layers with size, rotation, opacity, X/Y controls, duplicate, and remove
+- **Duplicate checkpoint** — branch from the current meme without losing the current look
+- **Local remix history** — recent compact checkpoints can be restored from the studio
+- **Media-safe history** — remix checkpoints deliberately do not duplicate uploaded-image bytes or filenames
 
-Because MemeForge uses native JavaScript modules, serve the repository over HTTP rather than opening `index.html` directly from the filesystem.
+## Privacy boundary
+
+Uploaded images are processed locally in the browser. MemeForge does not upload them to a server.
+
+Reusable templates and remix checkpoints are intentionally smaller than full projects:
+
+```text
+FULL PROJECT
+├── caption
+├── uploaded image
+├── topic / concepts
+├── template state
+├── stickers
+└── export format
+
+TEMPLATE
+├── visual treatment
+├── text styling / position
+└── image-fit defaults
+    ├── caption ❌
+    └── image bytes ❌
+
+REMIX CHECKPOINT
+├── caption / layout
+├── stickers
+├── format
+└── image-fit state
+    └── image bytes ❌
+```
+
+This keeps local history compact and prevents a single uploaded image from being copied repeatedly into browser storage.
+
+## React development
 
 ```bash
 git clone https://github.com/MichaelWave369/MemeForge.git
+cd MemeForge/react-app
+npm install
+npm run dev
+```
+
+Production build:
+
+```bash
+npm run build
+```
+
+The React app uses Vite base path `/MemeForge/` for GitHub Pages.
+
+## Vanilla app
+
+The original dependency-free app remains in the repository root and can be served with any static HTTP server:
+
+```bash
 cd MemeForge
 python -m http.server 8080
 ```
 
 Then open `http://localhost:8080`.
 
-Any simple static server works.
-
 ## Tests
+
+Root engine/hardening tests:
 
 ```bash
 npm test
 ```
 
-The suite covers concept generation, creative scoring, project serialization, local storage, built-in template normalization, template privacy boundaries, import/export envelopes, de-duplication, favorites, malformed values, and HTML/JavaScript selector wiring.
+The suite covers:
 
-GitHub Actions also syntax-checks all browser modules before running the suite.
+- concept generation and diversity
+- Meme Potential scoring
+- project storage
+- template normalization and privacy boundaries
+- template-pack import/export
+- V0.4 export-format definitions
+- remix-history media stripping
+- checkpoint image preservation
+- remix-history caps
 
-## Static hosting
-
-MemeForge remains intentionally static-host friendly. It can be served from:
-
-- GitHub Pages
-- Netlify
-- Cloudflare Pages
-- Vercel static hosting
-- Any ordinary web server
-
-For GitHub Pages, publish the repository root from the `main` branch. No build step is required.
+GitHub Actions syntax-checks the plain JavaScript modules and runs the test suite. A separate Pages workflow installs the React dependencies, runs the Vite production build, uploads the Pages artifact, and deploys it.
 
 ## Architecture
 
 ```text
-Topic / signal
-     │
-     ▼
-Style + weirdness controls
-     │
-     ├──────────────► Meme Potential heuristic
-     │
-     ▼
-Local Angle Engine
-     │
-     ▼
-12-concept tournament
-     │
-     ▼
-Selected concept
-     │
-     ├──────────────► Template Library
-     │                  ├── built-in layouts
-     │                  ├── favorites/search
-     │                  ├── user layouts
-     │                  └── import/export packs
-     ▼
-Canvas Meme Studio
-     │
-     ├── uploaded/local background
-     ├── crop / zoom / pan
-     ├── draggable text layers
-     ├── typography controls
-     ├── local project storage
-     ├── copy caption
-     └── export PNG
+TOPIC / SIGNAL
+      │
+      ▼
+HUMOR PROFILES + WEIRDNESS
+      │
+      ├──────────────► MEME POTENTIAL
+      ▼
+12-CONCEPT TOURNAMENT
+      │
+      ▼
+SELECTED CONCEPT
+      │
+      ├──────────────► TEMPLATE LIBRARY
+      ▼
+CANVAS STUDIO
+      │
+      ├── local image
+      ├── draggable text
+      ├── stickers / shapes
+      ├── 1:1 / 4:5 / 9:16 / 16:9
+      ├── undo / redo
+      └── PNG export
+      │
+      ▼
+ONE-CLICK REMIX
+      │
+      ├── checkpoint current look
+      ├── choose another angle
+      ├── choose another built-in layout
+      └── preserve uploaded image
 ```
 
-The current app has no hidden network calls. Future trend providers and AI providers belong behind explicit adapters rather than being mixed into the core generator.
-
-See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the longer design.
-
-## Template privacy boundary
-
-A MemeForge template is a **layout**, not a copy of a finished meme.
-
-A reusable template may store:
-
-- visual treatment
-- watermark preference
-- background fit / zoom / pan defaults
-- text-layer position
-- font choice
-- font size
-- text color
-- alignment
-- outline / shadow preferences
-
-A reusable template does **not** store:
-
-- top or bottom caption text
-- uploaded-image data URLs
-- uploaded-image filenames
-
-That keeps template packs small and prevents exporting private local images or text by accident.
-
-## Meme Potential in V0
-
-The displayed score is a **creative heuristic**, not a claim about live popularity, future virality, or social engagement. It currently combines:
-
-- caption fit
-- topic specificity
-- remix potential
-- visual potential
-- deterministic novelty heuristic
-
-When live trend adapters arrive, external signal measurements should be displayed separately from creative scoring so the UI never launders one kind of evidence into another.
+The core generator, scoring, storage, template logic, demo trend data, and built-in templates live under `src/` and are reused by the React app rather than duplicated.
 
 ## Roadmap
 
-### V0.1 — Local Forge
+### V0.1 — Local Forge ✅
 
-- [x] Browser UI
-- [x] Local angle engine
-- [x] Meme Potential heuristic
-- [x] Concept tournament
-- [x] Canvas editor
-- [x] PNG export
+- Browser UI
+- Local angle engine
+- Meme Potential heuristic
+- Concept tournament
+- Canvas editor
+- PNG export
 
-### V0.2 — Meme Studio
+### V0.2 — Meme Studio ✅
 
-- [x] User-supplied image backgrounds
-- [x] Browser-side image resizing
-- [x] Image fit / position / zoom
-- [x] Draggable text placement
-- [x] Font / size / color / alignment controls
-- [x] Outline and shadow controls
-- [x] Save and load projects in local storage
-- [x] Autosave
-- [ ] Undo / redo
-- [ ] Sticker / shape layers
-- [ ] Multiple export aspect ratios
+- User image backgrounds
+- Image fit / zoom / pan
+- Draggable text
+- Typography controls
+- Local save/load and autosave
 
-### V0.3 — Template System
+### V0.3 — Template System ✅
 
-- [x] Original built-in template library
-- [x] User-created reusable templates
-- [x] Favorites
-- [x] Template search / filters
-- [x] Versioned template import / export
-- [x] Import normalization and malformed-value hardening
-- [x] Privacy-safe template serialization
+- Original template library
+- User templates
+- Favorites and search
+- Import/export packs
+- Privacy-safe serialization
 
-### V0.4 — Remix Tools
+### V0.4 — Remix Tools ✅
 
-- [ ] Undo / redo stack
-- [ ] Sticker / shape layers
-- [ ] Square / portrait / landscape exports
-- [ ] Duplicate/remix current project
-- [ ] Lightweight project history
+- Undo / redo
+- Sticker / shape layers
+- Square / portrait / story / landscape exports
+- One-click remix
+- Duplicate checkpoint
+- Compact local remix history
 
 ### V1 — Trend Radar
 
-- [ ] Provider adapter interface
-- [ ] GDELT/news signal adapter
-- [ ] Additional public trend signals where terms permit
-- [ ] Signal normalization
-- [ ] Topic clustering
-- [ ] Separate Trend Velocity and Meme Potential scores
+- Provider adapter interface
+- News/public-signal adapters
+- Signal normalization
+- Topic clustering
+- Evidence links
+- Separate Trend Velocity and Meme Potential scores
 
 ### V1.5 — Optional AI adapters
 
-- [ ] Caption-generation adapter
-- [ ] Original-image-generation adapter
-- [ ] Provider-agnostic prompt engine
-- [ ] User-owned API configuration or serverless proxy
-- [ ] Explicit provenance on AI-generated output
+- Caption and punchline generation
+- Original-image generation
+- Provider-agnostic adapter layer
+- User-owned API configuration or serverless proxy
+- Explicit model/provider provenance
 
 ### V2 — Meme Tournament
 
-- [ ] Competing humor agents
-- [ ] Novelty / clarity / punchline critic
-- [ ] Diversity penalty to prevent twelve near-identical jokes
-- [ ] Human selection feedback
+- Competing humor agents
+- Novelty / clarity / punchline critic
+- Diversity penalty
+- Human-selection feedback
 
 ### V3 — Cultural Signal Lab
 
-- [ ] Measure which angles users choose
-- [ ] Compare signal velocity to humor-selection patterns
-- [ ] Opt-in analytics only
-- [ ] Export research-friendly aggregate data
-
-See [`docs/ROADMAP.md`](docs/ROADMAP.md).
+- Opt-in aggregate creative-choice analysis
+- Compare signal velocity with selected humor angles
+- Research-friendly exports
 
 ## Design principles
 
 1. **Do not fake live data.** Demo data says demo.
-2. **Diversity beats repetition.** Concepts should be meaningfully different.
-3. **Local-first before cloud-first.** The core tool should remain useful offline/static.
-4. **Local images stay local.** User uploads are processed in-browser unless a future feature explicitly says otherwise.
-5. **Templates reuse layouts, not private artifacts.** Caption and uploaded-image bytes stay out of template packs.
-6. **Separate evidence from inference.** Trend strength, creative scoring, and predicted engagement are different things.
-7. **Original by default.** Built-in treatments and templates avoid shipping copyrighted meme-template art.
-8. **Provider adapters stay replaceable.** No single AI or trend source should own the architecture.
+2. **Fast beats complicated.** New controls should shorten the path from idea to artifact.
+3. **Diversity beats repetition.** Concepts should be meaningfully different.
+4. **Local-first before cloud-first.** The core tool should remain useful without external services.
+5. **Local images stay local.**
+6. **Templates reuse layouts, not private artifacts.**
+7. **Remix history avoids duplicating image bytes.**
+8. **Separate evidence from inference.** Trend strength, creative scoring, and predicted engagement are different things.
+9. **Original by default.** Built-in treatments avoid bundling copyrighted meme-template art.
+10. **Provider adapters stay replaceable.**
 
 ## Repository layout
 
 ```text
 MemeForge/
-├── index.html
-├── src/
+├── index.html                 # vanilla app
+├── src/                       # shared core engines + vanilla UI
 │   ├── app.js
 │   ├── template-ui.js
-│   ├── styles.css
 │   ├── data/
-│   │   ├── trends.js
-│   │   └── templates.js
 │   └── engines/
-│       ├── meme-engine.js
-│       ├── score-engine.js
-│       ├── storage-engine.js
-│       └── template-engine.js
+├── react-app/                 # public React/Vite frontend
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── canvas.js
+│   │   ├── remix-history.js
+│   │   ├── useStudioHistory.js
+│   │   ├── styles.css
+│   │   └── v04.css
+│   ├── package.json
+│   └── vite.config.js
 ├── tests/
-│   └── engine.test.mjs
+│   ├── engine.test.mjs
+│   └── remix.test.mjs
 ├── docs/
-│   ├── ARCHITECTURE.md
-│   └── ROADMAP.md
-├── package.json
+├── .github/workflows/
 ├── LICENSE
 └── README.md
 ```
@@ -281,4 +291,4 @@ MIT. See [`LICENSE`](LICENSE).
 
 ---
 
-**MemeForge V0.3** — forge the joke, save the look, remix the culture.
+**MemeForge V0.4** — forge it fast, remix it faster.
