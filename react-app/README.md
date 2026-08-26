@@ -1,6 +1,21 @@
 # MemeForge React
 
-React/Vite frontend for MemeForge, designed to deploy as the public GitHub Pages site for `MichaelWave369/MemeForge` while preserving the original dependency-free V0.3 app in the repository root.
+React/Vite frontend for MemeForge, deployed as the public GitHub Pages site for `MichaelWave369/MemeForge` while preserving the original dependency-free app in the repository root.
+
+## Current milestone — V0.4 Remix Tools
+
+V0.4 is intentionally about making the fast workflow faster rather than turning MemeForge into a heavy image editor.
+
+New React features:
+
+- one-click Remix: rotate to another concept + built-in look while preserving the uploaded image;
+- grouped undo / redo, including Ctrl/Cmd+Z and redo shortcuts;
+- export aspect ratios: Square 1:1, Portrait 4:5, Story 9:16, Landscape 16:9;
+- simple draggable sticker / shape layers with size, position, rotation, opacity, duplicate, and remove controls;
+- Duplicate checkpoint for branching from the current meme;
+- compact local remix history with restore buttons;
+- remix checkpoints deliberately exclude uploaded-image bytes and filenames, avoiding repeated large localStorage copies;
+- the existing V0.3 template library, image editor, concept engine, scoring, project save/load, and PNG export remain intact.
 
 ## Stack
 
@@ -18,6 +33,12 @@ The app reuses MemeForge's existing local engines from `../src`:
 - template engine
 - demo trend data
 - built-in template pack
+
+V0.4 React-specific helpers live in `react-app/src`:
+
+- `canvas.js` — variable-size Canvas renderer and sticker layers
+- `useStudioHistory.js` — grouped undo/redo state
+- `remix-history.js` — compact media-stripped checkpoints
 
 ## Local development
 
@@ -39,24 +60,23 @@ The Vite base path is `/MemeForge/` so generated assets work at the repository P
 
 ## Deployment
 
-`.github/workflows/pages-react.yml` builds `react-app/dist` and deploys it with the official GitHub Pages Actions flow.
+`.github/workflows/pages-react.yml` builds `react-app/dist` and deploys it through GitHub Pages Actions.
 
-If GitHub Pages has never been enabled for the repository, open:
+The public URL is:
 
-`Repository Settings → Pages → Build and deployment → Source → GitHub Actions`
+`https://michaelwave369.github.io/MemeForge/`
 
-After that, pushes affecting the React app or shared MemeForge engines automatically rebuild and redeploy the site.
+Pushes affecting the React app or shared MemeForge engines automatically rebuild and redeploy the site.
 
 ## Local-first behavior
-
-The React app follows the same boundaries as vanilla MemeForge:
 
 - uploaded images are processed in the browser;
 - project state is saved in browser local storage;
 - reusable templates omit caption text and uploaded-image bytes;
+- remix checkpoints also omit uploaded-image bytes;
 - no backend or AI API is required;
 - demo trend cards remain explicitly demo data.
 
 ## Relationship to the vanilla app
 
-The root V0.3 app remains intact. The React app imports the shared engines instead of cloning their logic, so both frontends use the same core generator, scoring, storage, and template formats.
+The root app remains intact. The React app imports the shared MemeForge engines instead of cloning their core generator/scoring/template logic. React V0.4 adds faster remix-specific UI and Canvas capabilities on top of that shared foundation.
