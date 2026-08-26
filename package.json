@@ -1,0 +1,15 @@
+{
+  "name": "memeforge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first trend-to-meme prototyping engine.",
+  "scripts": {
+    "test": "node --test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MichaelWave369/MemeForge.git"
+  },
+  "license": "MIT"
+}
