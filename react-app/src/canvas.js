@@ -2,12 +2,34 @@ const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
 export const DEFAULT_FONT = "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif";
 
+export const CANVAS_FORMATS = {
+  square: { id: 'square', label: 'Square', ratio: '1:1', width: 1080, height: 1080 },
+  portrait: { id: 'portrait', label: 'Portrait', ratio: '4:5', width: 1080, height: 1350 },
+  story: { id: 'story', label: 'Story', ratio: '9:16', width: 1080, height: 1920 },
+  landscape: { id: 'landscape', label: 'Landscape', ratio: '16:9', width: 1200, height: 675 }
+};
+
+export const STICKER_CHOICES = [
+  { glyph: '⚡', label: 'Bolt' },
+  { glyph: '🔥', label: 'Fire' },
+  { glyph: '😂', label: 'Laugh' },
+  { glyph: '🤖', label: 'Robot' },
+  { glyph: '✨', label: 'Sparkle' },
+  { glyph: '★', label: 'Star' },
+  { glyph: '●', label: 'Dot' },
+  { glyph: '▲', label: 'Triangle' },
+  { glyph: '→', label: 'Arrow' }
+];
+
 export function defaultStudio() {
   return {
+    format: 'square',
     visualTheme: 'signal',
     watermark: true,
     activeLayer: 'top',
+    activeStickerId: null,
     background: { dataUrl: '', name: '', fit: 'cover', zoom: 1, x: 0, y: 0 },
+    stickers: [],
     layers: {
       top: { text: 'WHEN THE INTERNET INVENTS A NEW PROBLEM', x: 0.5, y: 0.24, size: 82, font: DEFAULT_FONT, color: '#ffffff', align: 'center', outline: true, shadow: false },
       bottom: { text: 'AND SOMEHOW IT BECOMES YOUR MEETING', x: 0.5, y: 0.76, size: 82, font: DEFAULT_FONT, color: '#ffffff', align: 'center', outline: true, shadow: false }
@@ -56,7 +78,8 @@ function drawTheme(ctx, theme, width, height) {
     gradient.addColorStop(0, '#f7b32b'); gradient.addColorStop(1, '#f45d01');
     ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
     ctx.save(); ctx.translate(width / 2, height / 2); ctx.rotate(-0.38); ctx.fillStyle = 'rgba(20,20,20,.12)';
-    for (let x = -1200; x < 1200; x += 150) ctx.fillRect(x, -900, 70, 1800);
+    const reach = Math.max(width, height) * 1.5;
+    for (let x = -reach; x < reach; x += 150) ctx.fillRect(x, -reach, 70, reach * 2);
     ctx.restore(); return;
   }
   if (theme === 'terminal') {
@@ -64,11 +87,12 @@ function drawTheme(ctx, theme, width, height) {
     ctx.fillStyle = 'rgba(106,255,145,.08)';
     for (let y = 0; y < height; y += 8) ctx.fillRect(0, y, width, 2);
     ctx.font = '700 26px monospace'; ctx.fillStyle = 'rgba(106,255,145,.12)';
-    for (let i = 0; i < 18; i += 1) ctx.fillText(`0x${(i * 92821 + 369).toString(16).padStart(6, '0')} // cultural_signal`, 54, 78 + i * 58);
+    const rows = Math.ceil(height / 58);
+    for (let i = 0; i < rows; i += 1) ctx.fillText(`0x${(i * 92821 + 369).toString(16).padStart(6, '0')} // cultural_signal`, 54, 78 + i * 58);
     return;
   }
   if (theme === 'void') {
-    const gradient = ctx.createRadialGradient(width * .62, height * .34, 40, width * .5, height * .5, width * .8);
+    const gradient = ctx.createRadialGradient(width * .62, height * .34, 40, width * .5, height * .5, Math.max(width, height) * .8);
     gradient.addColorStop(0, '#30354f'); gradient.addColorStop(.45, '#171923'); gradient.addColorStop(1, '#07080c');
     ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height); return;
   }
@@ -78,7 +102,7 @@ function drawTheme(ctx, theme, width, height) {
   ctx.strokeStyle = 'rgba(94,231,240,.13)'; ctx.lineWidth = 2;
   for (let x = 0; x <= width; x += 72) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke(); }
   for (let y = 0; y <= height; y += 72) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke(); }
-  ctx.fillStyle = 'rgba(255,107,61,.35)'; ctx.beginPath(); ctx.arc(width * .78, height * .28, 160, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,107,61,.35)'; ctx.beginPath(); ctx.arc(width * .78, height * .28, Math.min(width, height) * .15, 0, Math.PI * 2); ctx.fill();
 }
 
 function drawUploaded(ctx, image, background, width, height) {
@@ -121,22 +145,52 @@ function drawLayer(ctx, canvas, studio, layerName, showSelection, boundsOut) {
   const padding = Math.max(12, fitted.size * .12);
   const bounds = { left: left - padding, right: left + fitted.maxLineWidth + padding, top: centerY - totalHeight / 2 - padding, bottom: centerY + totalHeight / 2 + padding };
   boundsOut[layerName] = bounds;
-  if (showSelection && studio.activeLayer === layerName) {
+  if (showSelection && !studio.activeStickerId && studio.activeLayer === layerName) {
     ctx.save(); ctx.strokeStyle = 'rgba(94,231,240,.9)'; ctx.lineWidth = 3; ctx.setLineDash([12, 9]);
     ctx.strokeRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top); ctx.restore();
   }
 }
 
+function drawSticker(ctx, canvas, studio, sticker, showSelection, boundsOut) {
+  const width = canvas.width; const height = canvas.height;
+  const size = clamp(Number(sticker.size || 120), 40, 360);
+  const x = clamp(Number(sticker.x || .5), .03, .97) * width;
+  const y = clamp(Number(sticker.y || .5), .03, .97) * height;
+  const rotation = clamp(Number(sticker.rotation || 0), -180, 180) * Math.PI / 180;
+  const opacity = clamp(Number(sticker.opacity ?? 1), .2, 1);
+  const glyph = String(sticker.glyph || '✨').slice(0, 4);
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(rotation);
+  ctx.globalAlpha = opacity;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `900 ${size}px "Apple Color Emoji", "Segoe UI Emoji", Inter, Arial, sans-serif`;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(glyph, 0, 0);
+  ctx.restore();
+
+  const half = size * .62;
+  const bounds = { left: x - half, right: x + half, top: y - half, bottom: y + half };
+  boundsOut[sticker.id] = bounds;
+  if (showSelection && studio.activeStickerId === sticker.id) {
+    ctx.save(); ctx.strokeStyle = 'rgba(255,179,71,.95)'; ctx.lineWidth = 3; ctx.setLineDash([10, 8]);
+    ctx.strokeRect(bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top); ctx.restore();
+  }
+}
+
 export function drawMeme(canvas, studio, image, { showSelection = true } = {}) {
-  if (!canvas) return { top: null, bottom: null };
+  if (!canvas) return { top: null, bottom: null, stickers: {} };
   const ctx = canvas.getContext('2d'); const width = canvas.width; const height = canvas.height;
   drawTheme(ctx, studio.visualTheme, width, height);
   const hasImage = drawUploaded(ctx, image, studio.background, width, height);
   if (!hasImage) { ctx.fillStyle = studio.visualTheme === 'paper' ? 'rgba(20,20,20,.08)' : 'rgba(0,0,0,.23)'; ctx.fillRect(54, 54, width - 108, height - 108); }
-  const bounds = { top: null, bottom: null };
+  const bounds = { top: null, bottom: null, stickers: {} };
   drawLayer(ctx, canvas, studio, 'top', showSelection, bounds);
   drawLayer(ctx, canvas, studio, 'bottom', showSelection, bounds);
-  if (!hasImage) { ctx.textAlign = 'left'; ctx.font = '800 22px Inter, Arial, sans-serif'; ctx.fillStyle = studio.visualTheme === 'paper' || studio.visualTheme === 'warning' ? 'rgba(20,20,20,.65)' : 'rgba(255,255,255,.64)'; ctx.fillText('MEMEFORGE // REACT', 70, 92); }
+  (studio.stickers || []).forEach(sticker => drawSticker(ctx, canvas, studio, sticker, showSelection, bounds.stickers));
+  if (!hasImage) { ctx.textAlign = 'left'; ctx.font = '800 22px Inter, Arial, sans-serif'; ctx.fillStyle = studio.visualTheme === 'paper' || studio.visualTheme === 'warning' ? 'rgba(20,20,20,.65)' : 'rgba(255,255,255,.64)'; ctx.fillText('MEMEFORGE // REACT V0.4', 70, 92); }
   if (studio.watermark) { ctx.textAlign = 'right'; ctx.font = '800 20px Inter, Arial, sans-serif'; ctx.fillStyle = hasImage || (studio.visualTheme !== 'paper' && studio.visualTheme !== 'warning') ? 'rgba(255,255,255,.72)' : 'rgba(20,20,20,.65)'; ctx.fillText('MEMEFORGE', width - 70, height - 72); }
   return bounds;
 }
