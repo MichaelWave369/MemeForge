@@ -7,7 +7,7 @@ MemeForge should evolve from a fast meme prototyper into a trend-to-meme laborat
 The core loop stays:
 
 ```text
-signal → angle → selection → render → share
+signal → angle → selection → template → render → share
 ```
 
 ## V0.1 — Local Forge
@@ -36,38 +36,47 @@ Status: **implemented core**
 - [x] Image position X/Y
 - [x] Image zoom
 - [x] Draggable top and bottom text layers
-- [x] Text size controls
-- [x] Font-family controls
-- [x] Text color controls
-- [x] Text alignment controls
+- [x] Text size / font / color / alignment controls
 - [x] Outline / shadow controls
 - [x] Fine-grained text X/Y placement controls
-- [x] Versioned project state saved in `localStorage`
+- [x] Versioned project state in `localStorage`
 - [x] Explicit save / load
 - [x] Debounced autosave
 - [x] PNG export without editor-selection chrome
-- [ ] Sticker / shape layer
-- [ ] Undo / redo
-- [ ] Export aspect ratios: square, portrait, landscape
 
-### V0.2 hardening targets
+## V0.3 — Template System
 
-- Storage-size meter for image-heavy projects
-- Optional lower-quality image persistence mode
-- Keyboard nudging for selected text layers
-- Better mobile drag affordances
-- Project import/export as JSON
+Status: **implemented**
 
-## V0.3 — Template system
+- [x] 8 original built-in layouts
+- [x] User-created reusable templates
+- [x] Template metadata and tags
+- [x] Search
+- [x] All / Favorites / Built-in / Mine filters
+- [x] Template favorites
+- [x] Local user-template persistence
+- [x] Versioned JSON template-pack export
+- [x] Versioned JSON template-pack import
+- [x] Duplicate-id merge behavior
+- [x] Imported value normalization and bounds checking
+- [x] Approved-font allowlist
+- [x] Template privacy boundary: no caption text, image bytes, or image filename in reusable packs
+- [x] Applying templates preserves current caption and uploaded image
 
-- Original built-in template pack
-- User-created reusable templates
-- Template metadata
-- Search / filters
-- Template favorites
-- Template import/export
+Built-in templates remain original graphic/layout recipes rather than bundled third-party meme imagery.
 
-Avoid shipping unlicensed copyrighted imagery by default.
+## V0.4 — Remix Tools
+
+Goal: make the studio feel like a small creative workstation without adding a backend.
+
+- [ ] Undo / redo history
+- [ ] Sticker / shape layers
+- [ ] Square / portrait / landscape output sizes
+- [ ] Duplicate/remix current project
+- [ ] Lightweight local project history
+- [ ] Keyboard nudging for selected layers
+- [ ] Project JSON import/export
+- [ ] Storage-size meter for image-heavy projects
 
 ## V1 — Trend Radar
 
@@ -170,6 +179,7 @@ With explicit opt-in analytics, MemeForge could study aggregate creative choices
 - which topics are selected
 - which humor styles are selected
 - which generated concepts are forged
+- which templates are selected
 - which concepts are remixed
 - which export formats are preferred
 
@@ -191,9 +201,10 @@ MemeForge should not become:
 - a fake virality oracle;
 - a hidden surveillance product;
 - a platform that silently uploads local images;
+- a template exchange that quietly exports private image/caption content;
 - a dependency-heavy app that stops working when one AI vendor changes an API;
 - a system that presents generated claims as sourced news.
 
 ## North star
 
-MemeForge succeeds when a user can discover a topic, understand why it may be interesting, create several genuinely different jokes about it, turn the chosen joke into a polished image without leaving the browser, and leave with a shareable artifact in a few minutes.
+MemeForge succeeds when a user can discover a topic, create several genuinely different jokes about it, reuse or build a visual language, turn the chosen joke into a polished image without leaving the browser, and leave with a shareable artifact in a few minutes.
