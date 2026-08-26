@@ -2,19 +2,20 @@
 
 ## 1. Purpose
 
-MemeForge converts a cultural topic into a set of meaningfully different meme concepts, lets a human choose the strongest angle, and renders the result in a browser-native studio.
+MemeForge converts a cultural topic into meaningfully different meme concepts, lets a human choose the strongest angle, optionally applies a reusable visual layout, and renders the result in a browser-native studio.
 
-The architecture intentionally separates five concerns:
+The architecture intentionally separates six concerns:
 
 1. **Signal acquisition** — what people may be talking about.
 2. **Creative interpretation** — which comedic angles can be applied.
 3. **Scoring** — how useful a topic appears for meme creation.
-4. **Rendering** — how a selected concept becomes a shareable artifact.
-5. **Local project state** — how user edits survive refreshes without requiring an account or backend.
+4. **Template language** — reusable visual layout and styling.
+5. **Rendering** — how a selected concept becomes a shareable artifact.
+6. **Local persistence** — how projects, templates, and favorites survive refreshes without requiring an account or backend.
 
-Keeping these concerns separate prevents a future live trend number from being mistaken for a creative score or a speculative virality prediction.
+Keeping these concerns separate prevents a future live trend number from being mistaken for a creative score, a template choice, or a speculative virality prediction.
 
-## 2. V0.2 data flow
+## 2. V0.3 data flow
 
 ```text
 ┌──────────────────────┐
@@ -41,6 +42,16 @@ Keeping these concerns separate prevents a future live trend number from being m
            │ human selection
            ▼
 ┌──────────────────────────────┐
+│ Template Library             │
+├──────────────────────────────┤
+│ built-in original layouts    │
+│ user layouts                 │
+│ search / filters / favorites │
+│ JSON pack import / export    │
+└──────────┬───────────────────┘
+           │ optional apply
+           ▼
+┌──────────────────────────────┐
 │ Canvas Meme Studio           │
 ├──────────────────────────────┤
 │ local image upload           │
@@ -53,7 +64,7 @@ Keeping these concerns separate prevents a future live trend number from being m
         │               │
         ▼               ▼
  localStorage       PNG / caption
- versioned state       export
+ project state          export
 ```
 
 ## 3. Current modules
@@ -62,112 +73,132 @@ Keeping these concerns separate prevents a future live trend number from being m
 
 Contains demo prompts only. These are explicitly marked as demo signals in the UI.
 
+### `src/data/templates.js`
+
+Contains the original built-in V0.3 template pack. Built-ins are layout/style recipes, not bundled third-party meme images.
+
+Each template describes:
+
+```text
+id
+name
+description
+tags
+source
+studio
+  visualTheme
+  watermark
+  background fit / zoom / pan
+  top text-layer styling
+  bottom text-layer styling
+```
+
 ### `src/engines/meme-engine.js`
 
-Pure local concept-generation logic.
-
-Inputs:
-
-```text
-topic: string
-selectedStyles: string[]
-weirdness: number
-count: number
-```
-
-Outputs a list of concepts with:
-
-```text
-style
-title
-top
-bottom
-caption
-note
-rank
-```
-
-The engine uses multiple factories per humor profile and deterministic seeded ordering. This keeps output stable enough to debug while still varying by topic, style set, and weirdness value.
+Pure local concept-generation logic. It produces multiple deterministic-but-topic-sensitive angles from a topic, humor-profile set, weirdness value, and requested count.
 
 ### `src/engines/score-engine.js`
 
-Produces a creative heuristic from local inputs. It is intentionally described as a heuristic, not a prediction of virality.
+Produces the local `Meme Potential` creative heuristic. It is intentionally not presented as a virality prediction.
 
-Current factors:
+### `src/engines/template-engine.js`
 
-- caption fit
-- specificity
-- remix potential
-- visual potential
-- novelty heuristic
+Owns template normalization, creation, application semantics, filtering, pack encoding/decoding, and user-template merging.
+
+Important rules:
+
+- imported numeric values must be finite and are clamped to editor-supported ranges;
+- fonts are restricted to the editor’s supported font set;
+- unknown themes/alignment modes/fits fall back safely;
+- malformed or incompatible template packs decode to an empty set;
+- user-template merge is deterministic by template id;
+- applying a template preserves current meme caption text and uploaded-image data.
 
 ### `src/engines/storage-engine.js`
 
-Owns the versioned local-project envelope and storage helpers.
-
-Responsibilities:
-
-- encode a project with an explicit schema version;
-- reject malformed or incompatible saved data;
-- save/load against a Storage-compatible interface;
-- report write failures instead of throwing into the UI;
-- keep browser persistence logic testable without browser globals.
-
-The current storage schema is `v2` and uses the key:
+Owns Storage-compatible helpers for three independent local concerns:
 
 ```text
 memeforge:project:v0.2
+memeforge:templates:v0.3
+memeforge:template-favorites:v0.3
 ```
+
+The project remains on schema version 2 because V0.3 did not require changing the saved project shape. Templates and favorites have separate keys so template-library evolution does not invalidate user projects.
 
 ### `src/app.js`
 
-Coordinates browser state, concept selection, Canvas drawing, drag hit-testing, local image preprocessing, typography controls, persistence, caption copying, and PNG export.
+Coordinates the main MemeForge studio state: concept selection, Canvas drawing, drag hit-testing, local image preprocessing, typography controls, project persistence, caption copying, and PNG export.
 
-The in-memory studio model contains:
+### `src/template-ui.js`
 
-```text
-visualTheme
-watermark
-activeLayer
-background
-  dataUrl
-  name
-  fit
-  zoom
-  x
-  y
-layers
-  top
-  bottom
-```
+Coordinates the V0.3 template library UI.
 
-Each text layer includes copy, normalized X/Y position, size, font, color, alignment, outline, and shadow state.
+Rather than creating a second copy of studio state, it uses the existing editor controls as the integration boundary. Applying a template updates those controls and dispatches the same input/change events a human edit would produce. This keeps `app.js` authoritative for actual rendering/project state.
+
+Responsibilities include:
+
+- render built-in and user-template cards;
+- search/filter/favorite behavior;
+- read the current visual layout from editor controls;
+- save custom layouts locally;
+- apply templates without replacing caption/image content;
+- import/export versioned JSON packs;
+- delete custom layouts.
 
 ### `src/styles.css`
 
-Responsive visual system with no third-party CSS dependency. The Canvas uses `touch-action: none` so pointer dragging works with both mouse and touch input.
+Responsive visual system with no third-party CSS dependency. It includes the studio, draggable Canvas interaction styling, and V0.3 template-card previews.
 
-## 4. Image handling model
+## 4. Template privacy boundary
 
-User-supplied images are selected through a local file input. V0.2 does not upload them.
+A reusable MemeForge template is intentionally narrower than a project.
 
-Before persistence, the browser:
+A template can contain:
+
+```text
+visual theme
+watermark preference
+background fit / zoom / pan defaults
+text positions
+font family
+font size
+font color
+alignment
+outline / shadow
+```
+
+A template cannot contain:
+
+```text
+caption text
+uploaded-image data URL
+uploaded-image filename
+concept board
+active topic
+```
+
+This is enforced by constructing templates through a normalized layout-only schema instead of serializing the project object and deleting fields afterward.
+
+That direction matters: **allowlist what belongs in a template rather than blacklist what should not leak.**
+
+## 5. Image handling model
+
+User-supplied images are selected through a local file input. V0.3 does not upload them.
+
+Before project persistence, the browser:
 
 1. decodes the selected image locally;
 2. scales its longest edge down to at most 1600 px;
 3. re-encodes it as WebP where supported, otherwise JPEG;
-4. keeps the resulting data URL in the project state;
-5. stores it only when the local project is saved/autosaved.
+4. keeps the resulting data URL in project state;
+5. stores it only when the project is saved/autosaved.
 
-This reduces storage pressure while preserving enough resolution for the current 1080×1080 export target.
+Template creation never copies that data URL.
 
-`localStorage` still has browser-specific quotas. A large image can therefore cause a save failure even after resizing; the UI reports that failure rather than implying the project was saved.
+## 6. Canvas interaction model
 
-## 5. Canvas interaction model
-
-Text placement is stored as normalized coordinates between `0` and `1`, then clamped to a safe interior region of the canvas. This keeps layer placement independent of CSS display size.
-
-After each draw, MemeForge records approximate text-layer bounds. Pointer interaction follows:
+Text placement uses normalized coordinates between `0` and `1`, clamped to a safe interior region. After each draw, MemeForge records approximate text-layer bounds for pointer hit-testing.
 
 ```text
 pointer down
@@ -183,79 +214,59 @@ pointer move → normalized X/Y
 redraw + autosave
 ```
 
-The cyan selection rectangle exists only in the editor preview. PNG export redraws once without selection chrome, exports, then restores the editor preview.
+The cyan selection rectangle exists only in the editor preview. PNG export redraws without selection chrome, exports, then restores the editor state.
 
-## 6. Future provider boundary
+## 7. Template-pack format
 
-Live data should enter through adapters with a common result shape.
+Exports use a JSON envelope:
 
-Suggested interface:
-
-```js
+```json
 {
-  provider: 'gdelt',
-  fetchedAt: 'ISO-8601 timestamp',
-  topic: 'string',
-  signals: {
-    velocity: 0,
-    volume: 0,
-    freshness: 0
-  },
-  evidence: [
-    {
-      title: 'string',
-      url: 'string',
-      publishedAt: 'ISO-8601 timestamp'
-    }
-  ]
+  "kind": "memeforge-template-pack",
+  "version": 1,
+  "exportedAt": "ISO-8601",
+  "templates": []
 }
 ```
 
-The UI should distinguish:
+Only user templates are exported. Built-ins ship with the application and are not duplicated into packs.
+
+Import behavior is fail-closed:
+
+- invalid JSON → no templates;
+- wrong `kind` → no templates;
+- unsupported version → no templates;
+- malformed entries → normalized or discarded;
+- duplicate ids → imported entry replaces the existing entry with that id.
+
+## 8. Future provider boundary
+
+Live trend data should enter through explicit provider adapters with a common result shape. The UI must keep these meanings separate:
 
 ```text
 TREND VELOCITY     evidence-derived
 MEME POTENTIAL     creative heuristic
-ENGAGEMENT         observed after publishing, if ever collected
-VIRALITY FORECAST  speculative model output, if ever implemented
+ENGAGEMENT         observed after publishing, if collected
+VIRALITY FORECAST  speculative model output, if implemented
 ```
 
 Those values must never be silently merged into one authoritative-looking number.
 
-## 7. AI boundary
+## 9. AI boundary
 
-AI should be optional. A future AI adapter can generate:
+AI remains optional. A future provider adapter may generate alternate captions, punchlines, original-image prompts, critic feedback, or diversity checks. The local engine remains the fallback and the application should still function without AI configuration.
 
-- alternate captions
-- alternate punchlines
-- original image prompts
-- critic feedback
-- concept diversity checks
-
-Suggested provider interface:
-
-```js
-async function generateAngles({ topic, styles, weirdness, count }) {
-  return {
-    provider,
-    model,
-    generatedAt,
-    concepts
-  };
-}
-```
-
-The existing local engine remains the fallback.
-
-## 8. Security and privacy model
-
-V0.2 contains no secrets and makes no external API calls.
+## 10. Security and privacy model
 
 Current guarantees:
 
+- no shared secrets;
+- no external API calls in V0.3;
 - uploaded images are processed locally;
-- saved project state is written to browser local storage;
-- DOM text is written through `textContent` or form values rather than injected HTML;
+- project/template/favorite persistence uses browser local storage;
+- template export excludes caption and image bytes;
+- imported templates are normalized before application;
+- DOM content uses `textContent`/form values rather than injected HTML;
 - PNG rendering occurs locally on Canvas;
 - no analytics are included.
 
@@ -265,18 +276,18 @@ When provider credentials are introduced:
 - use a serverless proxy or user-owned local configuration;
 - validate and rate-limit backend requests;
 - treat trend-provider content as untrusted input;
-- sanitize any text inserted into the DOM;
-- keep rendering on Canvas/textContent paths rather than injecting HTML.
+- preserve provenance and evidence links;
+- keep generated claims distinct from sourced facts.
 
-## 9. Rendering philosophy
+## 11. Rendering philosophy
 
-Built-in treatments remain original graphic treatments instead of bundled third-party meme-template imagery. User-supplied imagery is explicitly user-selected and local.
+Built-in treatments and templates remain original layout/graphic recipes instead of bundled third-party meme-template imagery. User-supplied imagery is explicitly user-selected and local.
 
-Future remote image sources must account for CORS and provenance before promising export. A remote image that taints the Canvas would break local PNG generation, so remote asset loading should go through a controlled adapter rather than arbitrary URL drawing.
+Future remote image sources must account for provenance and CORS before promising export; arbitrary remote drawing can taint the Canvas and break PNG generation.
 
-## 10. Growth path
+## 12. Growth path
 
-The key architectural rule is simple:
+The key architectural rule remains:
 
 > Keep MemeForge useful as a small static app even after smarter providers are attached.
 
