@@ -3,6 +3,13 @@ import assert from 'node:assert/strict';
 
 import { buildConcepts } from '../src/engines/meme-engine.js';
 import { scoreMemePotential } from '../src/engines/score-engine.js';
+import {
+  PROJECT_SCHEMA_VERSION,
+  decodeProject,
+  encodeProject,
+  loadProject,
+  saveProject
+} from '../src/engines/storage-engine.js';
 
 test('buildConcepts returns a full 12-concept board', () => {
   const concepts = buildConcepts(
@@ -44,4 +51,52 @@ test('scoreMemePotential is deterministic and bounded', () => {
 test('blank topics do not claim a meaningful score', () => {
   const score = scoreMemePotential('   ', 3, 7);
   assert.equal(score.total, 0);
+});
+
+test('project codec round-trips v0.2 studio state', () => {
+  const project = {
+    topic: 'AI agents becoming coworkers',
+    weirdness: 8,
+    studio: {
+      background: { dataUrl: 'data:image/webp;base64,abc', zoom: 1.2 },
+      layers: { top: { text: 'HELLO', x: 0.4, y: 0.2 } }
+    }
+  };
+
+  const encoded = encodeProject(project);
+  const parsedEnvelope = JSON.parse(encoded);
+  assert.equal(parsedEnvelope.version, PROJECT_SCHEMA_VERSION);
+  assert.deepEqual(decodeProject(encoded), project);
+});
+
+test('project codec rejects malformed and wrong-version state', () => {
+  assert.equal(decodeProject('not json'), null);
+  assert.equal(decodeProject(JSON.stringify({ version: 999, project: {} })), null);
+  assert.equal(decodeProject(JSON.stringify({ version: PROJECT_SCHEMA_VERSION })), null);
+});
+
+test('storage helpers save and load without browser globals', () => {
+  const values = new Map();
+  const storage = {
+    setItem(key, value) { values.set(key, value); },
+    getItem(key) { return values.get(key) ?? null; },
+    removeItem(key) { values.delete(key); }
+  };
+  const project = { topic: 'local storage test', studio: { watermark: true } };
+
+  const saved = saveProject(storage, project);
+  assert.equal(saved.ok, true);
+  assert.ok(saved.bytes > 0);
+  assert.deepEqual(loadProject(storage), project);
+});
+
+test('storage helper reports quota-like write failures instead of throwing', () => {
+  const storage = {
+    setItem() { throw new Error('QuotaExceededError'); },
+    getItem() { return null; }
+  };
+
+  const saved = saveProject(storage, { topic: 'too large' });
+  assert.equal(saved.ok, false);
+  assert.match(saved.error, /quota/i);
 });
