@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="MemeForge turns cultural signals and topics into original meme concepts you can edit and export in the browser." />
+  <meta name="description" content="MemeForge turns cultural signals and topics into original meme concepts you can edit, remix, save locally, and export in the browser." />
   <meta name="theme-color" content="#101116" />
   <title>MemeForge — Trend to Meme Engine</title>
   <link rel="stylesheet" href="./src/styles.css" />
@@ -30,9 +30,9 @@
   <main id="top">
     <section class="hero shell">
       <div class="hero-copy">
-        <p class="eyebrow">MEME INTELLIGENCE // LOCAL-FIRST MVP</p>
+        <p class="eyebrow">MEME INTELLIGENCE // LOCAL-FIRST V0.2</p>
         <h1>Forge memes from whatever the internet is talking about.</h1>
-        <p class="lede">Pick a topic, choose a humor profile, dial the weirdness, and MemeForge generates distinct concepts you can remix, edit, and export as PNG — with no API key required.</p>
+        <p class="lede">Pick a topic, choose a humor profile, dial the weirdness, and MemeForge generates distinct concepts you can remix, edit, save locally, and export as PNG — with no API key required.</p>
         <div class="hero-actions">
           <a class="button primary" href="#forge">Start forging</a>
           <button class="button ghost" id="surpriseMe" type="button">Surprise me</button>
@@ -43,8 +43,8 @@
         <div class="signal-topline"><span class="status-dot"></span> ENGINE ONLINE</div>
         <dl>
           <div><dt>Generator</dt><dd>Local</dd></div>
-          <div><dt>API keys</dt><dd>None</dd></div>
-          <div><dt>Export</dt><dd>PNG</dd></div>
+          <div><dt>Image handling</dt><dd>Browser only</dd></div>
+          <div><dt>Project save</dt><dd>Local storage</dd></div>
           <div><dt>Trend feed</dt><dd>Demo / V1 hook ready</dd></div>
         </dl>
       </aside>
@@ -102,44 +102,162 @@
     <section class="shell section studio-section" id="studio">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">03 // MEME STUDIO</p>
+          <p class="eyebrow">03 // MEME STUDIO V0.2</p>
           <h2>Edit the survivor.</h2>
         </div>
-        <p class="section-note">The canvas uses original generated visual treatments rather than copyrighted template art.</p>
+        <p class="section-note">Upload images stay in your browser. Drag either text layer directly on the canvas, then save the project locally or export a PNG.</p>
       </div>
 
       <div class="studio-grid">
-        <div class="canvas-wrap panel">
-          <canvas id="memeCanvas" width="1080" height="1080" aria-label="Meme preview canvas"></canvas>
+        <div class="canvas-column">
+          <div class="canvas-wrap panel">
+            <canvas id="memeCanvas" width="1080" height="1080" aria-label="Meme preview canvas. Drag text layers to reposition them."></canvas>
+            <div class="canvas-hint">Drag top or bottom text directly on the canvas</div>
+          </div>
+          <div class="project-bar panel">
+            <div>
+              <strong>Local project</strong>
+              <span id="saveStatus" aria-live="polite">Not saved yet</span>
+            </div>
+            <div class="project-actions">
+              <button class="button ghost small" id="saveProject" type="button">Save</button>
+              <button class="button ghost small" id="loadProject" type="button">Load saved</button>
+              <button class="button ghost small" id="newProject" type="button">New project</button>
+            </div>
+          </div>
         </div>
 
         <div class="editor panel">
-          <label class="field">
-            <span>Top text</span>
-            <textarea id="topText" rows="3" maxlength="180">WHEN THE INTERNET INVENTS A NEW PROBLEM</textarea>
-          </label>
-          <label class="field">
-            <span>Bottom text</span>
-            <textarea id="bottomText" rows="3" maxlength="180">AND SOMEHOW IT BECOMES YOUR MEETING</textarea>
-          </label>
-          <label class="field">
-            <span>Visual treatment</span>
-            <select id="visualTheme">
-              <option value="signal">Signal Grid</option>
-              <option value="void">Void Poster</option>
-              <option value="paper">Office Memo</option>
-              <option value="warning">Warning Label</option>
-              <option value="terminal">Terminal Brain</option>
-            </select>
-          </label>
-          <label class="check-field">
-            <input id="watermark" type="checkbox" checked />
-            <span>Add small MemeForge mark</span>
-          </label>
-          <div class="editor-actions">
+          <section class="editor-group">
+            <div class="group-heading">
+              <strong>Background</strong>
+              <span id="imageName">Original treatment</span>
+            </div>
+            <input id="imageUpload" type="file" accept="image/*" hidden />
+            <div class="editor-actions">
+              <label class="button ghost upload-button" for="imageUpload">Upload image</label>
+              <button class="button ghost" id="removeImage" type="button" disabled>Remove image</button>
+              <button class="button ghost" id="shuffleTheme" type="button">Shuffle look</button>
+            </div>
+
+            <label class="field">
+              <span>Visual treatment</span>
+              <select id="visualTheme">
+                <option value="signal">Signal Grid</option>
+                <option value="void">Void Poster</option>
+                <option value="paper">Office Memo</option>
+                <option value="warning">Warning Label</option>
+                <option value="terminal">Terminal Brain</option>
+              </select>
+            </label>
+
+            <div class="control-grid image-controls">
+              <label class="field">
+                <span>Image fit</span>
+                <select id="imageFit">
+                  <option value="cover">Cover</option>
+                  <option value="contain">Contain</option>
+                </select>
+              </label>
+              <label class="field compact-field">
+                <span>Zoom <output id="imageZoomValue">100%</output></span>
+                <input id="imageZoom" type="range" min="50" max="300" value="100" />
+              </label>
+              <label class="field compact-field">
+                <span>Pan X <output id="imageXValue">0</output></span>
+                <input id="imageX" type="range" min="-100" max="100" value="0" />
+              </label>
+              <label class="field compact-field">
+                <span>Pan Y <output id="imageYValue">0</output></span>
+                <input id="imageY" type="range" min="-100" max="100" value="0" />
+              </label>
+            </div>
+          </section>
+
+          <section class="editor-group">
+            <div class="group-heading">
+              <strong>Copy</strong>
+              <span>Changes render instantly</span>
+            </div>
+            <label class="field">
+              <span>Top text</span>
+              <textarea id="topText" rows="3" maxlength="180">WHEN THE INTERNET INVENTS A NEW PROBLEM</textarea>
+            </label>
+            <label class="field">
+              <span>Bottom text</span>
+              <textarea id="bottomText" rows="3" maxlength="180">AND SOMEHOW IT BECOMES YOUR MEETING</textarea>
+            </label>
+          </section>
+
+          <section class="editor-group">
+            <div class="group-heading">
+              <strong>Text layer</strong>
+              <span>Drag on canvas or fine-tune here</span>
+            </div>
+            <label class="field">
+              <span>Editing layer</span>
+              <select id="activeLayer">
+                <option value="top">Top text</option>
+                <option value="bottom">Bottom text</option>
+              </select>
+            </label>
+
+            <div class="control-grid">
+              <label class="field">
+                <span>Font</span>
+                <select id="fontFamily">
+                  <option value="Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif">Impact</option>
+                  <option value="'Arial Black', Arial, sans-serif">Arial Black</option>
+                  <option value="Inter, Arial, sans-serif">Inter</option>
+                  <option value="Georgia, serif">Georgia</option>
+                  <option value="'Courier New', monospace">Courier New</option>
+                </select>
+              </label>
+              <label class="field">
+                <span>Alignment</span>
+                <select id="textAlign">
+                  <option value="center">Center</option>
+                  <option value="left">Left</option>
+                  <option value="right">Right</option>
+                </select>
+              </label>
+              <label class="field compact-field">
+                <span>Size <output id="fontSizeValue">82</output>px</span>
+                <input id="fontSize" type="range" min="28" max="140" value="82" />
+              </label>
+              <label class="field color-field">
+                <span>Color</span>
+                <input id="fontColor" type="color" value="#ffffff" />
+              </label>
+              <label class="field compact-field">
+                <span>X position <output id="textXValue">50</output>%</span>
+                <input id="textX" type="range" min="5" max="95" value="50" />
+              </label>
+              <label class="field compact-field">
+                <span>Y position <output id="textYValue">25</output>%</span>
+                <input id="textY" type="range" min="5" max="95" value="25" />
+              </label>
+            </div>
+
+            <div class="toggle-row">
+              <label class="check-field">
+                <input id="textOutline" type="checkbox" checked />
+                <span>Outline</span>
+              </label>
+              <label class="check-field">
+                <input id="textShadow" type="checkbox" />
+                <span>Shadow</span>
+              </label>
+              <label class="check-field">
+                <input id="watermark" type="checkbox" checked />
+                <span>MemeForge mark</span>
+              </label>
+            </div>
+          </section>
+
+          <div class="editor-actions export-actions">
             <button class="button primary" id="downloadButton" type="button">Download PNG</button>
             <button class="button ghost" id="copyButton" type="button">Copy caption</button>
-            <button class="button ghost" id="shuffleTheme" type="button">Shuffle look</button>
           </div>
           <p class="caption-preview" id="captionPreview">WHEN THE INTERNET INVENTS A NEW PROBLEM — AND SOMEHOW IT BECOMES YOUR MEETING</p>
         </div>
@@ -148,8 +266,8 @@
   </main>
 
   <footer class="site-footer shell">
-    <p>MemeForge V0.1 · Local-first meme prototyping lab.</p>
-    <p>Built to turn signals into jokes, not pretend demo data is live data.</p>
+    <p>MemeForge V0.2 · Local-first meme prototyping studio.</p>
+    <p>Local images stay local. Demo trends stay labeled demo.</p>
   </footer>
 
   <script type="module" src="./src/app.js"></script>
