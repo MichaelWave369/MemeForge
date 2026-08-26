@@ -215,6 +215,52 @@ input[type="color"] {
 .concept-card p { color: var(--muted); line-height: 1.5; font-size: .9rem; }
 .concept-card .button { align-self: start; }
 
+.template-toolbar {
+  display: grid;
+  grid-template-columns: 1.4fr .7fr 1fr;
+  gap: 14px;
+  padding: 18px;
+  margin-bottom: 18px;
+  align-items: end;
+}
+.template-toolbar-actions { display: flex; gap: 8px; flex-wrap: wrap; grid-column: 1 / -1; }
+.template-status { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: .78rem; }
+.template-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.template-card { overflow: hidden; min-width: 0; }
+.template-preview { position: relative; aspect-ratio: 1; overflow: hidden; border-bottom: 1px solid var(--line); background: #171923; }
+.template-theme-signal {
+  background:
+    linear-gradient(rgba(94,231,240,.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(94,231,240,.10) 1px, transparent 1px),
+    radial-gradient(circle at 76% 28%, rgba(255,107,61,.55), transparent 28%),
+    linear-gradient(135deg, #11131b, #0d2630);
+  background-size: 24px 24px, 24px 24px, auto, auto;
+}
+.template-theme-void { background: radial-gradient(circle at 64% 32%, #30354f, #171923 46%, #07080c); }
+.template-theme-paper { background: repeating-linear-gradient(#e9e3d5 0 22px, #dad4c6 23px); }
+.template-theme-warning { background: repeating-linear-gradient(-22deg, #f7b32b 0 24px, #f45d01 25px 48px); }
+.template-theme-terminal { background: repeating-linear-gradient(#07140d 0 8px, #0b2215 9px 10px); }
+.template-preview-text {
+  position: absolute;
+  width: 78%;
+  transform: translate(-50%, -50%);
+  font: 900 .78rem/1.05 Inter, Arial, sans-serif;
+  text-shadow: 0 2px 3px rgba(0,0,0,.9);
+  letter-spacing: -.03em;
+  pointer-events: none;
+}
+.template-card-body { display: grid; gap: 11px; padding: 15px; }
+.template-title-row { display: flex; align-items: start; justify-content: space-between; gap: 10px; }
+.template-title-row h3 { margin: 0; font-size: 1rem; }
+.favorite-button { border: 0; background: transparent; color: var(--muted); font-size: 1.35rem; line-height: 1; cursor: pointer; padding: 0; }
+.favorite-button.active { color: var(--hot-2); }
+.template-card p { margin: 0; color: var(--muted); font-size: .82rem; line-height: 1.45; min-height: 3.5em; }
+.template-meta { display: flex; justify-content: space-between; color: var(--cyan); font-size: .68rem; text-transform: uppercase; letter-spacing: .1em; }
+.template-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.template-tags span { border: 1px solid var(--line); border-radius: 999px; padding: 4px 7px; color: var(--muted); font-size: .67rem; }
+.template-card-actions { display: flex; flex-wrap: wrap; gap: 7px; }
+.template-empty { grid-column: 1 / -1; padding: 34px; text-align: center; color: var(--muted); }
+
 .studio-grid { display: grid; grid-template-columns: 1.12fr .88fr; gap: 18px; align-items: start; }
 .canvas-column { display: grid; gap: 12px; min-width: 0; }
 .canvas-wrap { padding: 14px; position: relative; overflow: hidden; }
@@ -272,6 +318,7 @@ input[type="color"] {
 @media (max-width: 1020px) {
   .studio-grid { grid-template-columns: 1fr; }
   .editor { position: static; max-height: none; overflow: visible; }
+  .template-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 
 @media (max-width: 900px) {
@@ -279,6 +326,9 @@ input[type="color"] {
   .hero { min-height: auto; padding-top: 65px; }
   .signal-card { transform: none; }
   .concept-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .template-toolbar { grid-template-columns: 1fr 1fr; }
+  .template-name-field { grid-column: 1 / -1; }
+  .template-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 620px) {
@@ -288,8 +338,10 @@ input[type="color"] {
   .hero h1 { font-size: clamp(3rem, 16vw, 5rem); }
   .section { padding: 58px 0; }
   .section-heading { align-items: start; flex-direction: column; }
-  .concept-grid { grid-template-columns: 1fr; }
+  .concept-grid, .template-grid { grid-template-columns: 1fr; }
   .forge-panel { padding: 17px; }
+  .template-toolbar { grid-template-columns: 1fr; }
+  .template-name-field { grid-column: auto; }
   .studio-grid { gap: 12px; }
   .control-grid { grid-template-columns: 1fr; }
   .project-bar { align-items: flex-start; flex-direction: column; }
