@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="MemeForge turns cultural signals and topics into original meme concepts you can edit, remix, save locally, and export in the browser." />
+  <meta name="description" content="MemeForge turns cultural signals and topics into original meme concepts you can edit, template, remix, save locally, and export in the browser." />
   <meta name="theme-color" content="#101116" />
   <title>MemeForge — Trend to Meme Engine</title>
   <link rel="stylesheet" href="./src/styles.css" />
@@ -21,6 +21,7 @@
     </a>
     <nav class="header-actions" aria-label="Primary navigation">
       <a href="#forge">Forge</a>
+      <a href="#templates">Templates</a>
       <a href="#studio">Studio</a>
       <a href="./docs/ARCHITECTURE.md">Architecture</a>
       <a class="github-link" href="https://github.com/MichaelWave369/MemeForge" target="_blank" rel="noreferrer">GitHub ↗</a>
@@ -30,11 +31,12 @@
   <main id="top">
     <section class="hero shell">
       <div class="hero-copy">
-        <p class="eyebrow">MEME INTELLIGENCE // LOCAL-FIRST V0.2</p>
+        <p class="eyebrow">MEME INTELLIGENCE // LOCAL-FIRST V0.3</p>
         <h1>Forge memes from whatever the internet is talking about.</h1>
-        <p class="lede">Pick a topic, choose a humor profile, dial the weirdness, and MemeForge generates distinct concepts you can remix, edit, save locally, and export as PNG — with no API key required.</p>
+        <p class="lede">Pick a topic, generate distinct angles, apply an original reusable layout, edit the survivor, and export it — all locally in the browser with no API key required.</p>
         <div class="hero-actions">
           <a class="button primary" href="#forge">Start forging</a>
+          <a class="button ghost" href="#templates">Browse templates</a>
           <button class="button ghost" id="surpriseMe" type="button">Surprise me</button>
         </div>
       </div>
@@ -43,8 +45,8 @@
         <div class="signal-topline"><span class="status-dot"></span> ENGINE ONLINE</div>
         <dl>
           <div><dt>Generator</dt><dd>Local</dd></div>
+          <div><dt>Template pack</dt><dd>Built-in + yours</dd></div>
           <div><dt>Image handling</dt><dd>Browser only</dd></div>
-          <div><dt>Project save</dt><dd>Local storage</dd></div>
           <div><dt>Trend feed</dt><dd>Demo / V1 hook ready</dd></div>
         </dl>
       </aside>
@@ -99,13 +101,52 @@
       <div class="concept-grid" id="conceptGrid"></div>
     </section>
 
+    <section class="shell section" id="templates">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">03 // TEMPLATE LIBRARY V0.3</p>
+          <h2>Reuse the look, not the joke.</h2>
+        </div>
+        <p class="section-note">Templates store layout and styling only. Your current caption and uploaded image stay yours when you switch templates.</p>
+      </div>
+
+      <div class="template-toolbar panel">
+        <label class="field template-search-field">
+          <span>Search templates</span>
+          <input id="templateSearch" type="text" placeholder="Search names, styles, tags…" autocomplete="off" />
+        </label>
+        <label class="field">
+          <span>Show</span>
+          <select id="templateFilter">
+            <option value="all">All templates</option>
+            <option value="favorites">Favorites</option>
+            <option value="builtin">Built-in</option>
+            <option value="mine">My templates</option>
+          </select>
+        </label>
+        <label class="field template-name-field">
+          <span>Save current look</span>
+          <input id="templateName" type="text" maxlength="60" placeholder="e.g. My chaos poster" />
+        </label>
+        <div class="template-toolbar-actions">
+          <button class="button primary" id="saveTemplate" type="button">Save template</button>
+          <button class="button ghost" id="exportTemplates" type="button">Export mine</button>
+          <input id="templateImport" type="file" accept="application/json,.json" hidden />
+          <label class="button ghost upload-button" for="templateImport">Import pack</label>
+        </div>
+        <p class="template-status" id="templateStatus" aria-live="polite">8 original built-in templates ready.</p>
+      </div>
+
+      <div class="template-grid" id="templateGrid" aria-live="polite"></div>
+    </section>
+
     <section class="shell section studio-section" id="studio">
       <div class="section-heading">
         <div>
-          <p class="eyebrow">03 // MEME STUDIO V0.2</p>
+          <p class="eyebrow">04 // MEME STUDIO V0.3</p>
           <h2>Edit the survivor.</h2>
         </div>
-        <p class="section-note">Upload images stay in your browser. Drag either text layer directly on the canvas, then save the project locally or export a PNG.</p>
+        <p class="section-note">Upload images stay in your browser. Drag either text layer directly on the canvas, save the project locally, or preserve the current look as a reusable template.</p>
       </div>
 
       <div class="studio-grid">
@@ -266,8 +307,8 @@
   </main>
 
   <footer class="site-footer shell">
-    <p>MemeForge V0.2 · Local-first meme prototyping studio.</p>
-    <p>Local images stay local. Demo trends stay labeled demo.</p>
+    <p>MemeForge V0.3 · Local-first meme prototyping studio.</p>
+    <p>Local images stay local. Templates reuse layouts, not somebody else’s joke.</p>
   </footer>
 
   <script type="module" src="./src/app.js"></script>
