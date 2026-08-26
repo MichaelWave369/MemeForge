@@ -1,9 +1,17 @@
 export const TEMPLATE_PACK_VERSION = 1;
 
+const DEFAULT_FONT = "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif";
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const VALID_THEMES = new Set(['signal', 'void', 'paper', 'warning', 'terminal']);
 const VALID_ALIGNMENTS = new Set(['left', 'center', 'right']);
 const VALID_FITS = new Set(['cover', 'contain']);
+const VALID_FONTS = new Set([
+  DEFAULT_FONT,
+  "'Arial Black', Arial, sans-serif",
+  'Inter, Arial, sans-serif',
+  'Georgia, serif',
+  "'Courier New', monospace"
+]);
 
 function safeString(value, fallback = '') {
   return typeof value === 'string' ? value : fallback;
@@ -14,7 +22,7 @@ function normalizeLayer(layer = {}) {
     x: clamp(Number(layer.x ?? 0.5), 0.05, 0.95),
     y: clamp(Number(layer.y ?? 0.5), 0.05, 0.95),
     size: clamp(Number(layer.size ?? 82), 28, 140),
-    font: safeString(layer.font, "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif"),
+    font: VALID_FONTS.has(layer.font) ? layer.font : DEFAULT_FONT,
     color: /^#[0-9a-f]{6}$/i.test(layer.color || '') ? layer.color : '#ffffff',
     align: VALID_ALIGNMENTS.has(layer.align) ? layer.align : 'center',
     outline: layer.outline !== false,
