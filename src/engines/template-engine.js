@@ -1,7 +1,6 @@
 export const TEMPLATE_PACK_VERSION = 1;
 
 const DEFAULT_FONT = "Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif";
-const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const VALID_THEMES = new Set(['signal', 'void', 'paper', 'warning', 'terminal']);
 const VALID_ALIGNMENTS = new Set(['left', 'center', 'right']);
 const VALID_FITS = new Set(['cover', 'contain']);
@@ -17,11 +16,17 @@ function safeString(value, fallback = '') {
   return typeof value === 'string' ? value : fallback;
 }
 
+function boundedNumber(value, fallback, min, max) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return fallback;
+  return Math.min(max, Math.max(min, numeric));
+}
+
 function normalizeLayer(layer = {}) {
   return {
-    x: clamp(Number(layer.x ?? 0.5), 0.05, 0.95),
-    y: clamp(Number(layer.y ?? 0.5), 0.05, 0.95),
-    size: clamp(Number(layer.size ?? 82), 28, 140),
+    x: boundedNumber(layer.x, 0.5, 0.05, 0.95),
+    y: boundedNumber(layer.y, 0.5, 0.05, 0.95),
+    size: boundedNumber(layer.size, 82, 28, 140),
     font: VALID_FONTS.has(layer.font) ? layer.font : DEFAULT_FONT,
     color: /^#[0-9a-f]{6}$/i.test(layer.color || '') ? layer.color : '#ffffff',
     align: VALID_ALIGNMENTS.has(layer.align) ? layer.align : 'center',
@@ -53,9 +58,9 @@ export function normalizeTemplate(template) {
       watermark: studio.watermark !== false,
       background: {
         fit: VALID_FITS.has(background.fit) ? background.fit : 'cover',
-        zoom: clamp(Number(background.zoom ?? 1), 0.5, 3),
-        x: clamp(Number(background.x ?? 0), -100, 100),
-        y: clamp(Number(background.y ?? 0), -100, 100)
+        zoom: boundedNumber(background.zoom, 1, 0.5, 3),
+        x: boundedNumber(background.x, 0, -100, 100),
+        y: boundedNumber(background.y, 0, -100, 100)
       },
       layers: {
         top: normalizeLayer(studio.layers?.top),
